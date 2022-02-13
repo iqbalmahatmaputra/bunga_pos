@@ -87,7 +87,10 @@ class Produk extends CI_Controller
     //         }
     //     }
     // }
-
+    function barangData(){
+        $data=$this->Produk_model->product_list();
+        echo json_encode($data);
+    }
     function get_barang($jenis = "", $id_penjualan){
        
         $kode_produk = $this->input->post('kode_produk');

@@ -55,6 +55,10 @@ class Produk_model extends CI_Model
         return $kd;
 
     }
+    function product_list(){
+        $hasil=$this->db->get('produk');
+        return $hasil->result();
+    }
     // get all
     function get_all()
     {

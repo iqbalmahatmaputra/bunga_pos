@@ -24,7 +24,22 @@ class Produk_penjualan extends CI_Controller
         $id = $_REQUEST['id_penjualan'];
         $id_user = $this->input->post('id_user', true);
         $tujuan = $this->input->post('tujuan', true);
-        
+
+    }
+    public function oke(){
+        $id_user = $this->session->userdata("id_user");
+        $tujuan = $this->input->post('tujuan', true);
+        $data = array(
+            'id_penjualan' => $this->input->post('id_penjualan', true),
+            'id_produk' => $this->input->post('id_produk', true),
+            'qty' => $this->input->post('qty', true),
+            'total_harga' => $this->input->post('total', true),
+            'tujuan' => "Belum",
+        );
+        $this->Produk_penjualan_model->insert($data);
+        echo json_encode(array(
+            "statusCode"=>200
+        ));
     }
     public function selesai()
     {

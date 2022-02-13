@@ -65,7 +65,7 @@ class Produk extends CI_Controller
 
 
     function get_autocomplete(){
-        $data = [];
+      
         if (isset($_GET['term'])) {
             $result = $this->Produk_model->search_produk($_GET['term']);
             if (count($result) > 0) {
@@ -88,17 +88,18 @@ class Produk extends CI_Controller
     //     }
     // }
 
-    function get_barang($jenis = ""){
-        $data = [];
+    function get_barang($jenis = "", $id_penjualan){
+       
         $kode_produk = $this->input->post('kode_produk');
-        $x['brg']=$this->db->query("SELECT * FROM produk where kode_produk like '$kode_produk%' limit 0,20");
+        $x['brg']=$this->db->query("SELECT * FROM produk where kode_produk like '%$kode_produk%' limit 0,20");
        
         if ($jenis != "supplier") {
             $x['supplier'] = 0;
         }else{
             $x['supplier'] = 1;
-
         }
+        $x['id_penjualan'] = $this->uri->segment('4');
+        
         $this->load->view('penjualan/v_detail_produk',$x);
         
     }

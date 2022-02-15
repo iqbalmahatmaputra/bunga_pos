@@ -12,6 +12,8 @@ class Produk_penjualan extends CI_Controller
 
         $this->load->model('Produk_penjualan_model');
         $this->load->model('Penjualan_model');
+        $this->load->model('Produk_model');
+
 
         $this->load->library('form_validation');
 
@@ -28,10 +30,11 @@ class Produk_penjualan extends CI_Controller
     }
     public function oke(){
         $id_user = $this->session->userdata("id_user");
-        $tujuan = $this->input->post('tujuan', true);
+        // $tujuan = $this->input->post('tujuan', true);
+        
         $data = array(
-            'id_penjualan' => $this->input->post('id_penjualan', true),
-            'id_produk' => $this->input->post('id_produk', true),
+            'id_penjualan' => $this->input->post('id_penjualan'),
+            'id_produk' => $this->input->post('id_produk'),
             'qty' => $this->input->post('qty', true),
             'total_harga' => $this->input->post('total', true),
             'tujuan' => "Belum",
@@ -40,6 +43,142 @@ class Produk_penjualan extends CI_Controller
         echo json_encode(array(
             "statusCode"=>200
         ));
+    }
+    public function siap(){
+        $id_penjualan = $this->input->post("id_penjualan");
+        $tujuan = $this->input->post("tujuan");
+        $data = $this->Produk_model->show_temp($id_penjualan)->result();
+     $total =0;
+     $jumlah_barang = 0;
+     foreach ($data as $d) {
+        $total += $d->total_harga * $d->qty;
+
+        $jumlah_barang += $d->qty; 
+     }
+
+        $data = array(
+            'qty' => $jumlah_barang,
+            'total' => $total,
+            'tujuan' => $tujuan
+    );
+
+        $this->db->set('tujuan', $tujuan);
+$this->db->where('id_penjualan', $id_penjualan);
+$this->db->update('produk_penjualan'); 
+
+$this->db->where('id_penjualan', $id_penjualan);
+$this->db->update('penjualan', $data);
+
+// Laporan
+$this->db->where("id_penjualan",$id_penjualan);
+        $penjualan=$this->db->get("penjualan")->row();
+        $this->db->where("id_user",$penjualan->id_user);
+        $nama=$this->db->get("user")->row();
+        $this->db->where("id_penjualan",$id_penjualan);
+        $produk =$this->db->get("v_penjualan_produk")->result();    
+        echo '
+        <style>table,p{font-family: Arial, Helvetica, sans-serif;border-collapse: collapse;}</style>
+        <table style="text-transform: capitalize;height: 59px; margin-left: auto; margin-right: auto; width: 1046px;">
+<tbody>
+<tr style="height: 88px;">
+<td style="width: 782px; height: 88px;">
+<h1><strong><a href="'.site_url('/penjualan').'">Queen Gallery</a></strong></h1>
+<p style="margin-top:-20px;"><strong>Jl. Hang Tuah Ujung No. 276B Pekanbaru - HP 0852 9476 3855</strong></p>
+<p>&nbsp;</p>
+</td>
+<td style="width: 248px; height: 88px;">
+<p><strong>Tgl.</strong> ' .$penjualan->tanggal_penjualan. '</p>
+<p><strong>No Faktur.&nbsp;</strong> QG-' .$penjualan->no_faktur ."-".$penjualan->id_penjualan. '</p>
+<p><strong>Kepada&nbsp;</strong> '.$penjualan->tujuan.'</p>
+
+
+
+</td>
+</tr>
+</tbody>
+</table>
+<table style="height: 77px; width: 1046px;" >
+<tbody>
+<tr style="border-bottom: 1px solid #000;border-top: 1px solid #000;">
+<th style="width: 23px; text-align: center; "><strong>No</strong></th>
+<th style="width: 380px; text-align: center; "><strong>Nama Barang</strong></th>
+<th style="width: 87px; text-align: center; "><strong>Qty</strong></th>
+<th style="width: 214px; text-align: center; "><strong>Harga</strong></th>
+<th style="width: 308px; text-align: center; "><strong>Jumlah</strong></th>
+</tr>
+';
+        $total = 0;
+        // print_r($produk);
+   foreach ($produk as $key => $value) {
+       
+            $this->db->where('id_produk', $value->id_produk);
+            $produk = $this->db->get('produk')->row();
+            $jumlah_harga = str_replace(".", "", $value->total_harga) * $value->qty;
+            $total += $jumlah_harga;
+            echo '<tr>
+<td style="width: 23px;text-align: center;">' . ($key+ 1) . '</td>
+<td style="width: 380px;text-align: left;"><span style="text-transform: uppercase;">'.$produk->kode_produk.'</span> | <span style="text-transform: capitalize;">' . $produk->nama_produk . '</span></td>
+<td style="width: 87px;text-align: center;">' . $value->qty ." ".$produk->satuan. '</td>
+<td style="width: 214px;text-align: center;">' . number_format(str_replace(".", "", $value->total_harga), 0, ".", ".") . '</td>
+<td style="width: 308px;text-align: center;">' . number_format($jumlah_harga, 0, ".", ".") . '</td>
+</tr>
+';
+
+            // $this->Produk_penjualan_model->insert($data);
+
+        }
+      
+        echo
+        '
+        <tr  style="border-bottom: 1px solid #000;">
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td></tr>
+        <tr>
+        <td style="width: 23px;text-align: center;"></td>
+        <td colspan="2" style="width: 380px;text-align: center;">Barang yang sudah dibeli tidak dapat dikembalikan / ditukar.</td>
+        <td style="width: 214px;text-align: right;"><p><strong>Jumlah</strong></p></td>
+        <td style="width: 308px;text-align: center;"><strong>' . number_format($total, 0, ".", ".") . '</strong></td>
+        </tr>
+        <tr>
+        <td style="width: 23px;text-align: center;"></td>
+        <td colspan="2" style="width: 380px;text-align: center;">Terima Kasih Atas Kepercayaan Anda.</td>
+        <td style="width: 214px;text-align: right;"><strong>Bayar</strong></td>
+        <td style="width: 308px;text-align: center;"></td>
+        </tr>
+        <tr>
+        <td style="width: 23px;text-align: center;"></td>
+        <td style="width: 380px;text-align: center;"></td>
+        <td style="width: 87px;text-align: center;"></td>
+        <td style="width: 214px;text-align: right;"><strong>Sisa</strong></td>
+        <td style="width: 308px;text-align: center;"></td>
+        </tr>
+</tbody>
+</table>
+&nbsp;
+
+<table style="height: 38px;" width="1044">
+<tbody>
+<tr>
+<td style="width: 514px; text-align: center;">
+<p>Yang Menerima</p>
+
+<p>(___________________)</p>
+</td>
+<td style="width: 514px;">
+<p style="text-align: center;">Hormat Kami,</p>
+
+<p style="text-align: center;">(___________________)</p>
+<p style="text-align: left;margin-left:170px;margin-top:-20px;text-transform: capitalize;"><small>    ' .$nama->nama_user . '</small></p>
+</td>
+</tr>
+</tbody>
+</table>
+        ';
+// End Laporan
+
     }
     public function selesai()
     {

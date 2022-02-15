@@ -25,6 +25,16 @@ class Produk_model extends CI_Model
         $this->datatables->add_column('action', anchor(site_url('produk/read/$1'),'Read')." | ".anchor(site_url('produk/update/$1'),'Update')." | ".anchor(site_url('produk/delete/$1'),'Delete','onclick="javasciprt: return confirm(\'Are You Sure ?\')"'), 'id_produk');
         return $this->datatables->generate();
     }
+    function jsonProdukPenjualan($id_penjualan) {
+        $this->datatables->select('*');
+        $this->datatables->from('produk_penjualan');
+        $this->datatables->where('id_penjualan', $id_penjualan);
+     
+        //add this line for join
+        //$this->datatables->join('table2', 'produk.field = table2.field');
+        $this->datatables->add_column('action', anchor(site_url('produk/deleteProduk/$1'),'<i class="flaticon2-trash"></i>','onclick="javasciprt: return confirm(\'Are You Sure ?\')"'), 'id_produk_penjualan');
+        return $this->datatables->generate();
+    }
     function get_nama($nama){
         $this->db->select('*');
         $this->db->from('produk');
@@ -75,6 +85,10 @@ class Produk_model extends CI_Model
     function get_barang($kode_produk){
         $hsl=$this->db->query("SELECT * FROM produk where kode_produk='$kode_produk'");
 		return $hsl;
+    }
+    function show_temp($id_penjualan){
+        $query="SELECT p.kode_produk as kode_produk, pp.* FROM produk_penjualan as pp left join produk as p on pp.id_produk = p.id_produk where id_penjualan='$id_penjualan'";
+		return $this->db->query($query);
     }
     function tampil_barang(){
         $hsl= $this->db->query("SELECT * FROM produk");

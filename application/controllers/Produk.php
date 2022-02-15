@@ -77,20 +77,8 @@ class Produk extends CI_Controller
             }
         }
     }
-    // function get_autocomplete(){
-    //     if (isset($_GET['term'])) {
-    //         $result = $this->produk_model->search_produk($_GET['term']);
-    //         if (count($result) > 0) {
-    //         foreach ($result as $row)
-    //             $arr_result[] = $row->kode_produk;
-    //             echo json_encode($arr_result);
-    //         }
-    //     }
-    // }
-    function barangData(){
-        $data=$this->Produk_model->product_list();
-        echo json_encode($data);
-    }
+   
+   
     function get_barang($jenis = "", $id_penjualan){
        
         $kode_produk = $this->input->post('kode_produk');
@@ -268,6 +256,106 @@ class Produk extends CI_Controller
     {
         header('Content-Type: application/json');
         echo $this->Produk_model->json();
+    }
+    public function jsonProdukPenjualan($id_penjualan)
+    {
+        header('Content-Type: application/json');
+        echo $this->Produk_model->jsonProdukPenjualan($id_penjualan);
+    }
+  
+    public function load_temp($id_penjualan){
+        
+        echo "<div class=''>
+        <table class='table table-bordered table-striped'>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Kode Barang</th>
+                    <th>Jumlah</th>
+                    <th>Total Harga</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>";
+        $data = $this->Produk_model->show_temp($id_penjualan)->result();
+        $no = 1;
+        $total = 0;
+        $jumlah_barang = 0;
+        foreach ($data as $d) {
+            echo "<tr>"
+            . "<td>$no</td>"
+            . "<td>$d->kode_produk</td>"
+            . "<td>$d->qty</td>"
+            . "<td>$d->total_harga</td>"
+            . "<td><button type='button' data-id=$d->id_produk class='btn btn-danger btn-rounded btn-sm delete'>Cancel</button></td>"
+            . "</tr>";
+           $total += $d->total_harga * $d->qty;
+           $jumlah_barang += $d->qty;
+            $no++;
+        }
+        echo "</table>
+        </div>";
+   echo "<div class='table'>
+        <table class='table'>
+                 <thead><tr><th>Total Penjualan (Rp)</th><td><input type='number' value=" . $total . " name='total' id='total_belanja' readonly></td><td>" . Terbilang($total) . "</td></tr></thead>
+                 <thead><tr><th>Total Barang </th><td><input type='number' value=" . $jumlah_barang . " name='jumlah_barang' id='jumlah_barang' readonly></td><td>" . Terbilang($jumlah_barang) . "</td></tr></thead>
+                 
+         </table>
+         
+    </div>";
+    }
+    function selesai(){
+           
+                $kd_barang=$_GET['kd_barang'];
+                $id_penjualan = $_GET['id_penjualan'];
+                $tujuan = $_GET['tujuan'];
+                $jumlah_barang = $_GET['jumlah_barang'];
+                $total = $_GET['total'];
+     
+
+        $data = array(
+            'qty' => $jumlah_barang,
+            'total' => $total_harga,
+            'tujuan' => $tujuan
+    );
+
+        $this->db->set('tujuan', $tujuan);
+$this->db->where('id_penjualan', $id_penjualan);
+$this->db->update('produk_penjualan'); 
+
+$this->db->where('id_penjualan', $id_penjualan);
+$this->db->update('penjualan', $data);
+    }
+    
+    function deleterecords()
+	{
+		
+			$id=$this->input->post('id');
+            $this->db->where('id_produk', $id);
+            $this->db->delete('produk_penjualan');
+			
+			echo json_encode(array(
+				"statusCode"=>200
+			));
+	 
+	}
+    function cancel() {
+        $id = $_GET['id'];
+        $this->db->where('id_produk', $id);
+        $this->db->delete('produk_penjualan');
+        
+    }
+    function kembalian() {
+        $a = $_GET['jumlah_uang'];
+        $b = $_GET['total_belanja'];
+        $c = $a - $b;
+        $data = array(
+            'jumlah' => $a,
+            'total_belanja' => $b,
+            'hasil' => $c,
+            'Terbilang' => Terbilang($c),
+            'Terbilang2' => Terbilang($a),
+        );
+        echo json_encode($data);
     }
 
     public function read($id)

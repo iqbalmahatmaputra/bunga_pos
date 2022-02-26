@@ -50,7 +50,6 @@ License: You must have a valid license purchased only from themeforest(the above
     <link href="<?php echo base_url(); ?>dist/assets/css/themes/layout/brand/dark.css?v=7.0.6" rel="stylesheet"
         type="text/css" />
     <link href="<?php echo base_url(); ?>dist/assets/css/themes/layout/aside/dark.css?v=7.0.6" rel="stylesheet"
-    <link href="<?php echo base_url(); ?>dist/select2/css/select2.min.css" rel="stylesheet"
         type="text/css" />
     <!--end::Layout Themes-->
 

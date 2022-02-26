@@ -88,6 +88,24 @@
 								<input type="text" class="form-control" name="tujuan" id="tujuan" placeholder="Tujuan"
 									required />
 						</div>
+                        <div class="d-flex flex-column flex-root">
+							<span class="font-weight-bolder mb-2">Pencatat Invoice</span>
+							<span class="opacity-70">
+								<select class="form-control selectpicker" data-size="7" data-live-search="true"
+									name="nama_user" id="nama_user" required>
+									<option value="">Pilih Petugas</option>
+									<?php
+$produks = $this->db->get("user")->result();
+foreach ($produks as $key => $value) {
+    ?>
+									<option value="<?php echo $value->nama_user; ?>
+"><?php echo $value->nama_user; ?></option>
+									<?php
+}
+?>
+								</select>
+							</span>
+						</div>
 					
 					</div>
 			</div>
@@ -116,7 +134,6 @@
 
 <?php $this->load->view('templates/footer');?>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 
 
 <script type="text/javascript">

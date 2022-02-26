@@ -31,6 +31,10 @@
                             <span class="font-weight-bolder mb-2">No Invoice</span>
                             <span class="opacity-70">QG-<?php echo $penjualan->no_faktur."-".$penjualan->id_penjualan ?></span>
                         </div>
+                        <div class=" d-flex flex-column flex-root">
+                            <span class="font-weight-bolder mb-2">Tujuan - Jenis</span>
+                            <span class="opacity-70">QG-<?php echo $penjualan->tujuan."-".$penjualan->jenis ?></span>
+                        </div>
                         <div class="d-flex flex-column flex-root">
                             <span class="font-weight-bolder mb-2">Pencatat Invoice</span>
                             <span class="">
@@ -69,7 +73,7 @@ foreach ($dataPenjualan as $key => $value) {
                     <div id="sub_isi">
                         <hr>
                         <div class="row">
-                            <div class="col-md-5"><?=$value->nama_produk;?> </div>
+                            <div class="col-md-5"> <?=$value->nama_produk;?> </div>
                             <div class="col-md-1"> <input class="form-control" type="text" name="jumlah[]" id="jumlah"
                                     value="<?=$value->qty;?>" readonly> </div>
                             <div class="col-md-3"> <input class="form-control" type="text" name="harga[]" id="harga"

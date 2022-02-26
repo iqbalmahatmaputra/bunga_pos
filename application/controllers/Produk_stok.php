@@ -91,10 +91,11 @@ class Produk_stok extends CI_Controller
             $produk = $this->db->query("select * from v_produk_stok where id_produk=" . $id_produk)->row();
             $produk_foto = $this->db->query("select foto_produk from produk where id_produk=" . $id_produk)->row();
             $stok = $this->db->query("select * from v_produk_stok_groupby where id_produk=" . $id_produk)->row();
-            $penjualan = $this->db->query("select * from v_penjualan_produk where id_produk=" . $id_produk)->result();
+            $penjualan = $this->db->query("select * from v_penjualan_produk where id_produk=" . $id_produk. " order by tanggal_penjualan desc")->result();
             $penjualanTotal = $this->db->query("select sum(qty) qty, sum(total_harga) total_harga from v_produk_penjualan where id_produk=" . $id_produk . " group by id_produk")->row();
             $retur = $this->db->query("select sum(qty) qty, tanggal_retur, no_faktur from v_retur where id_produk=" . $id_produk . " group by id_produk,no_faktur")->result();
             $returtotal = $this->db->query("select sum(qty) qty, tanggal_retur, no_faktur from v_retur where id_produk=" . $id_produk . " group by id_produk")->row();
+            // $final_stok = (empty($penjualan_total->qty)) ? $stok->jumlah_produk_stok - 0 + $jum_retur : $stok->jumlah_produk_stok - $penjualan_total->qty + $jum_retur;
             $data = array(
 
                 'stok_produk' => $row,
@@ -122,6 +123,7 @@ class Produk_stok extends CI_Controller
             'id_produk' => set_value('id_produk'),
             'tanggal_produk_stok' => set_value('tanggal_produk_stok'),
             'jumlah_produk_stok' => set_value('jumlah_produk_stok'),
+            'keterangan' => set_value('keterangan'),
         );
         $this->load->view('produk_stok/produk_stok_form', $data);
     }
@@ -137,10 +139,11 @@ class Produk_stok extends CI_Controller
                 'id_produk' => $this->input->post('id_produk', true),
                 'tanggal_produk_stok' => $this->input->post('tanggal_produk_stok', true),
                 'jumlah_produk_stok' => $this->input->post('jumlah_produk_stok', true),
+                'keterangan' => $this->input->post('keterangan', true),
             );
 
             $this->Produk_stok_model->insert($data);
-            $this->session->set_flashdata('message', '<div class="alert alert-success" role="alert">Data Berhasil dimasukkan</div>');
+            $this->session->set_flashdata('message', '<div class="alert alert-success" role="alert">Data '.$data['id_produk'].' Berhasil dimasukkan</div>');
             redirect(site_url('produk_stok'));
         }
     }

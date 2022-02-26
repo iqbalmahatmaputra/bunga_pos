@@ -102,6 +102,9 @@ var KTDatatableJsonRemoteDemo = function() {
                     field: 'qty',
                     title: 'Total Barang',
                 }, {
+                    field: 'tujuan',
+                    title: 'Tujuan',
+                }, {
                     field: 'total',
                     title: 'Total Penjualan',
                     template: function(row) {

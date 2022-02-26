@@ -3,7 +3,8 @@
 if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
-
+ini_set('max_execution_time', 0); 
+ini_set('memory_limit','2048M');
 class Produk extends CI_Controller
 {
     public function __construct()
@@ -24,46 +25,6 @@ class Produk extends CI_Controller
     {
         $this->load->view('produk/produk_list');
     }
-    public function form_penjualan(){
-        $data['data']=$this->Produk_model->tampil_barang();
-        // $this->load->view('penjualan/invoice',$data);
-        $this->load->view('penjualan/penjualan_form', $data);
-    }
-    // public function list_produk($jenis = "")
-    // {
-    //     $selectData = '<select class="form-control selectpicker cam_select" data-size="7" data-live-search="true" name="id_produk[]" id="id_produk"><option value="">Pilih Produk</option>';
-    //     $produks = $this->db->get("produk")->result();
-    //     foreach ($produks as $key => $value) {
-    //         $stok = $this->db->query("select * from v_stok where id_produk=" . $value->id_produk)->row();
-    //         if (!empty($stok)) {
-    //             if ($stok->final_stock != 0) {
-    //                 if ($jenis != "supplier") {
-    //                     $selectData .= '<option harga="' . $value->harga_jual_produk . '" stok="' . $stok->final_stock . '" value="' . $value->id_produk . '">' . $value->nama_produk . '</option>';
-    //                 } else {
-    //                     $selectData .= '<option harga="' . $value->harga_jual_produk_sup . '" stok="' . $stok->final_stock . '" value="' . $value->id_produk . '">' . $value->nama_produk . '</option>';
-    //                 }
-
-    //             }
-
-    //         } else {
-    //             $stok = $this->db->query("select * from v_produk_stok_groupby where id_produk=" . $value->id_produk)->row();
-    //             if ($stok->jumlah_produk_stok != 0) {
-    //                 if ($jenis != "supplier") {
-    //                     $selectData .= '<option harga="' . $value->harga_jual_produk . '" stok="' . $stok->jumlah_produk_stok . '" value="' . $value->id_produk . '">' . $value->nama_produk . '</option>';
-    //                 } else {
-    //                     $selectData .= '<option harga="' . $value->harga_jual_produk_sup . '" stok="' . $stok->jumlah_produk_stok . '" value="' . $value->id_produk . '">' . $value->nama_produk . '</option>';
-    //                 }
-
-    //             }
-
-    //         }
-
-    //     }
-    //     $selectData .= '</select>';
-    //     echo $selectData;
-    // }
-
-
     function get_autocomplete(){
       
         if (isset($_GET['term'])) {
@@ -94,175 +55,7 @@ class Produk extends CI_Controller
         $this->load->view('penjualan/v_detail_produk',$x);
         
     }
-
-      public function list_produk2($jenis = "")
-    {
-        $selectData = '<input type="text" name="id_produk[]" id="id_produk" class="form-control">';
-        $produks = $this->db->get("produk")->result();
-        foreach ($produks as $key => $value) {
-            $stok = $this->db->query("select final_stock from v_stok where id_produk=" . $value->id_produk)->row();
-            $retur = $this->db->query("select sum(qty) qty from v_retur WHERE id_produk=" . $value->id_produk. " GROUP BY id_produk")->row();
-            $returVal=0;
-            if(empty($retur->qty)){
-                $returVal=0;
-            }else{
-                $returVal=$retur->qty;
-            }
-            if (!empty($stok)) {
-                if ($stok->final_stock != 0) {
-                    $stok_akhir=$stok->final_stock+$returVal;
-                    if ($jenis != "supplier") {
-                        $selectData .= '<option harga="' . $value->harga_jual_produk . '" stok="' . $stok_akhir . '" value="' . $value->id_produk . '">' . $value->kode_produk . '</option>';
-                    } else {
-                        $selectData .= '<option harga="' . $value->harga_jual_produk_sup . '" stok="' . $stok_akhir . '" value="' . $value->id_produk . '">' . $value->kode_produk . '</option>';
-                    }
-
-                }
-
-            } else {
-                $retur = $this->db->query("select sum(qty) qty from v_retur WHERE id_produk=" . $value->id_produk. " GROUP BY id_produk")->row();
-                $returVal=0;
-                if(empty($retur->qty)){
-                    $returVal=0;
-                }else{
-                    $returVal=$retur->qty;
-                }
-                $stok_group = $this->db->query("select * from v_produk_stok_groupby where id_produk=" . $value->id_produk)->row();
-                if (isset($stok_group->jumlah_produk_stok)) {
-                    $stok_akhir=$stok_group->jumlah_produk_stok-$returVal;
-                    if ($jenis != "supplier") {
-                        $selectData .= '<option harga="' . $value->harga_jual_produk . '" stok="' . $stok_akhir . '" value="' . $value->id_produk . '">' . $value->kode_produk . '</option>';
-                    } else {
-                        $selectData .= '<option harga="' . $value->harga_jual_produk_sup . '" stok="' . $stok_akhir . '" value="' . $value->id_produk . '">' . $value->kode_produk . '</option>';
-                    }
-
-                }
-
-            }
-
-        }
-        $selectData .= '</select>';
-        echo $selectData;
-    }
-
-    function add_to_cart(){
-      
-            $kobar=$this->input->post('kode_produk');
-            $produk=$this->Produk_model->get_barang($kobar);
-            $i=$produk->row_array();
-            $data = array(
-                //    'id_produk'       => $i['id_produk'],
-                   'kode_produk'       => $i['kode_produk'],
-                   'qty'     => $this->input->post('qty'),
-                   'harga' =>$this->input->post('harga'),
-                   'total_harga'	  => str_replace(",", "",($this->input->post('qty')*$this->input->post('harga')))
-                );
-                if(!empty($this->cart->total_items())){
-                    foreach ($this->cart->contents() as $items){
-                        $id=$items['id'];
-                        $qtylama=$items['qty'];
-                        $rowid=$items['rowid'];
-                        $kobar=$this->input->post('kode_brg');
-                        $qty=$this->input->post('qty');
-                        if($id==$kobar){
-                            $up=array(
-                                'rowid'=> $rowid,
-                                'qty'=>$qtylama+$qty
-                                );
-                            $this->cart->update($up);
-                        }else{
-                            $this->cart->insert($data);
-                        }
-                    }
-                }else{
-                    $this->cart->insert($data);
-                }
-
-    //  $this->cart->insert($data);
-     redirect('produk/form_penjualan');
-       
-        }
-    public function list_produk($jenis = "")
-    {
-        $selectData = '<select class="form-control selectpicker cam_select" data-live-search-style="startsWith"  data-size="7" data-live-search="true" name="kode_produk[]" id="id_produk"><option value="">Pilih Produk</option>';
-        // $selectData = '
-        // <input type="text" name="kode_produk[]" id="kode_produk" class="form-control input-sm">';
-        $produks = $this->db->get("produk",20)->result();
-        foreach ($produks as $key => $value) {
-            $stok = $this->db->query("select final_stock from v_stok where id_produk='" . $value->kode_produk."'")->row();
-            $retur = $this->db->query("select sum(qty) qty from v_retur WHERE id_produk='" . $value->kode_produk. "' GROUP BY id_produk")->row();
-            $returVal=0;
-            if(empty($retur->qty)){
-                $returVal=0;
-            }else{
-                $returVal=$retur->qty;
-            }
-            if (!empty($stok)) {
-                if ($stok->final_stock != 0) {
-                    $stok_akhir=$stok->final_stock+$returVal;
-                    if ($jenis != "supplier") {
-                        $selectData .= '<option harga="' . $value->harga_jual_produk . '" stok="' . $stok_akhir . '" value="' . $value->kode_produk . '">' . $value->kode_produk . '</option>';
-                    } else {
-                        $selectData .= '<option harga="' . $value->harga_jual_produk_sup . '" stok="' . $stok_akhir . '" value="' . $value->kode_produk . '">' . $value->kode_produk . '</option>';
-                    }
-
-                }
-
-            } else {
-                $retur = $this->db->query("select sum(qty) qty from v_retur WHERE id_produk=" . $value->id_produk. " GROUP BY id_produk")->row();
-                $returVal=0;
-                if(empty($retur->qty)){
-                    $returVal=0;
-                }else{
-                    $returVal=$retur->qty;
-                }
-                $stok_group = $this->db->query("select * from v_produk_stok_groupby where id_produk=" . $value->id_produk)->row();
-                if (isset($stok_group->jumlah_produk_stok)) {
-                    $stok_akhir=$stok_group->jumlah_produk_stok-$returVal;
-                    if ($jenis != "supplier") {
-                        $selectData .= '<option harga="' . $value->harga_jual_produk . '" stok="' . $stok_akhir . '" value="' . $value->id_produk . '">' . $value->kode_produk . '</option>';
-                    } else {
-                        $selectData .= '<option harga="' . $value->harga_jual_produk_sup . '" stok="' . $stok_akhir . '" value="' . $value->id_produk . '">' . $value->kode_produk . '</option>';
-                    }
-
-                }
-
-            }
-
-        }
-        $selectData .= '</select>';
-        echo $selectData;
-    }
-
-
-    public function list_produk_retur($no_invoice="")
-    {
-        $penjualan = $this->db->query('select * from penjualan,user where penjualan.id_user=user.id_user and no_faktur=' . $no_invoice)->row();
-        $jenis=$penjualan->jenis;
-        $selectData = '<select class="form-control selectpicker cam_select" data-size="7" data-live-search="true" name="id_produk[]" id="id_produk"><option value="">Pilih Produk</option>';
-        $produks = $this->db->query("select *  from produk_penjualan where id_penjualan=".$penjualan->id_penjualan)->result();
-        foreach ($produks as $key => $value) {
-            $produk = $this->db->query("select * from produk where id_produk=" . $value->id_produk)->row();
-                    if ($jenis != "supplier") {
-                        $selectData .= '<option harga="' . $produk->harga_jual_produk . '" stok="' . $value->qty . '" value="' . $produk->id_produk . '">' . $produk->kode_produk . '</option>';
-                    } else {
-                        $selectData .= '<option harga="' . $produk->harga_jual_produk_sup . '" stok="' . $value->qty . '" value="' . $produk->id_produk . '">' . $produk->kode_produk . '</option>';
-                    }
-        }
-        $selectData .= '</select>';
-        echo $selectData;
-    }
-    public function json()
-    {
-        header('Content-Type: application/json');
-        echo $this->Produk_model->json();
-    }
-    public function jsonProdukPenjualan($id_penjualan)
-    {
-        header('Content-Type: application/json');
-        echo $this->Produk_model->jsonProdukPenjualan($id_penjualan);
-    }
-  
+    
     public function load_temp($id_penjualan){
         
         echo "<div class=''>
@@ -272,7 +65,7 @@ class Produk extends CI_Controller
                     <th>No</th>
                     <th>Kode Barang</th>
                     <th>Jumlah</th>
-                    <th>Total Harga</th>
+                    <th>Harga Satuan</th>
                     <th>Aksi</th>
                 </tr>
             </thead>";
@@ -288,7 +81,7 @@ class Produk extends CI_Controller
             . "<td>$d->total_harga</td>"
             . "<td><button type='button' data-id=$d->id_produk class='btn btn-danger btn-rounded btn-sm delete'>Cancel</button></td>"
             . "</tr>";
-           $total += $d->total_harga * $d->qty;
+           $total += $d->total_harga * $d->qty ;
            $jumlah_barang += $d->qty;
             $no++;
         }
@@ -356,6 +149,86 @@ $this->db->update('penjualan', $data);
             'Terbilang2' => Terbilang($a),
         );
         echo json_encode($data);
+    }
+
+      public function list_produk($jenis = "")
+    {
+        $selectData = '<select class="form-control selectpicker cam_select" data-size="7" data-live-search="true" name="id_produk[]" id="id_produk"><option value="">Pilih Produk</option>';
+        $this->db->select('id_produk,kode_produk,nama_produk,harga_jual_produk,harga_jual_produk,harga_jual_produk_sup');
+        $produks = $this->db->get("produk")->result();
+        foreach ($produks as $key => $value) {
+            $stok = $this->db->query("select * from v_stok_retur where id_produk=" . $value->id_produk)->row();
+            $retur = $this->db->query("select sum(qty) qty from v_retur WHERE id_produk=" . $value->id_produk. " GROUP BY id_produk")->row();
+            $returVal=0;
+            if(empty($retur->qty)){
+                $returVal=0;
+            }else{
+                $returVal=$retur->qty;
+            }
+            if (!empty($stok)) {
+                // if ($stok->final_stock != 0) {
+                    if($stok->final == NULL){
+                        $stok_akhir=$stok->final_stock;
+                    }else{
+                        $stok_akhir=$stok->final;
+                    }
+                    
+                    if ($jenis != "supplier") {
+                        $selectData .= '<option harga="' . $value->harga_jual_produk . '" stok="' . $stok_akhir . '" value="' . $value->id_produk . '">' . $value->kode_produk . '</option>';
+                    } else {
+                        $selectData .= '<option harga="' . $value->harga_jual_produk_sup . '" stok="' . $stok_akhir . '" value="' . $value->id_produk . '">' . $value->kode_produk . '</option>';
+                    }
+
+                // }
+
+            } else {
+                $retur = $this->db->query("select sum(qty) qty from v_retur WHERE id_produk=" . $value->id_produk. " GROUP BY id_produk")->row();
+                $returVal=0;
+                if(empty($retur->qty)){
+                    $returVal=0;
+                }else{
+                    $returVal=$retur->qty;
+                }
+                // $stok_group =  $this->db->query("select * from v_stok where id_produk=" . $value->id_produk)->row();
+                $stok_group = $this->db->query("select * from v_produk_stok_groupby where id_produk=" . $value->id_produk)->row();
+                if (isset($stok_group->jumlah_produk_stok)) {
+                    $stok_akhir=$stok_group->jumlah_produk_stok+$returVal;
+                    if ($jenis != "supplier") {
+                        $selectData .= '<option harga="' . $value->harga_jual_produk . '" stok="' . $stok_akhir . '" value="' . $value->id_produk . '">' . $value->kode_produk . '</option>';
+                    } else {
+                        $selectData .= '<option harga="' . $value->harga_jual_produk_sup . '" stok="' . $stok_akhir . '" value="' . $value->id_produk . '">' . $value->kode_produk . '</option>';
+                    }
+
+                }
+
+            }
+
+        }
+        $selectData .= '</select>';
+        echo $selectData;
+    }
+
+    public function list_produk_retur($no_invoice="")
+    {
+        $penjualan = $this->db->query('select * from penjualan,user where penjualan.id_user=user.id_user and no_faktur=' . $no_invoice)->row();
+        $jenis=$penjualan->jenis;
+        $selectData = '<select class="form-control selectpicker cam_select" data-size="7" data-live-search="true" name="id_produk[]" id="id_produk"><option value="">Pilih Produk</option>';
+        $produks = $this->db->query("select *  from produk_penjualan where id_penjualan=".$penjualan->id_penjualan)->result();
+        foreach ($produks as $key => $value) {
+            $produk = $this->db->query("select * from produk where id_produk=" . $value->id_produk)->row();
+                    if ($jenis != "supplier") {
+                        $selectData .= '<option harga="' . $produk->harga_jual_produk . '" stok="' . $value->qty . '" value="' . $produk->id_produk . '">' . $produk->kode_produk . '</option>';
+                    } else {
+                        $selectData .= '<option harga="' . $produk->harga_jual_produk_sup . '" stok="' . $value->qty . '" value="' . $produk->id_produk . '">' . $produk->kode_produk . '</option>';
+                    }
+        }
+        $selectData .= '</select>';
+        echo $selectData;
+    }
+    public function json()
+    {
+        header('Content-Type: application/json');
+        echo $this->Produk_model->json();
     }
 
     public function read($id)

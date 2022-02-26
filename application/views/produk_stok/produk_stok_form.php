@@ -27,7 +27,7 @@ foreach ($produks as $key => $value) {
 if ($id_produk == $value->id_produk) {
         echo "selected";
     }
-    ?>><?php echo $value->kode_produk; ?></option>
+    ?>><?php echo $value->id_produk; ?> | <?php echo $value->kode_produk; ?></option>
                     <?php
 }
 ?>
@@ -42,12 +42,23 @@ if ($id_produk == $value->id_produk) {
         </div>
     </div>
 
-
+<div class="row">
+    <div class="col-md-6">
     <div class="form-group">
         <label for="int">Quantity<?php echo form_error('jumlah_produk_stok') ?></label>
         <input type="number" class="form-control" name="jumlah_produk_stok" id="jumlah_produk_stok"
-            placeholder="Quantity" value="<?php echo $jumlah_produk_stok; ?>" />
+            placeholder="Quantity"  autofocus value="<?php echo $jumlah_produk_stok; ?>" />
     </div>
+</div>
+    <div class="col-md-6">
+    <div class="form-group">
+        <label for="int">Keterangan<?php echo form_error('keterangan') ?></label>
+        <input type="text" class="form-control" name="keterangan" id="keterangan"
+            placeholder="Keterangan Stok Produk"  autofocus value="<?php echo $keterangan; ?>" />
+    </div>
+    </div>
+</div>
+    
     <input type="hidden" name="id_produk_stok" value="<?php echo $id_produk_stok; ?>" />
     <button type="submit" class="btn btn-primary"><?php echo $button ?></button>
     <a href="<?php echo site_url('produk_stok') ?>" class="btn btn-default">Cancel</a>

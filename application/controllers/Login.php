@@ -10,7 +10,7 @@ class Login extends CI_Controller
 		parent::__construct();
 		date_default_timezone_set('Asia/Jakarta');
 
-        $this->load->model('User_model');
+        // $this->load->model('User_model');
         $this->load->library('form_validation');
 	}
 	
@@ -67,7 +67,7 @@ class Login extends CI_Controller
 				
 						);
 							$this->Activity_model->insert($hal);
-						redirect('home');
+						redirect('penjualan');
 					}
 					else {
 						redirect('/');

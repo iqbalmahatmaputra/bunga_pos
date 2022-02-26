@@ -119,7 +119,8 @@ var KTAppSettings = {
 </script>
 <!--begin::Page Vendors(used by this page)-->
 <script src="<?php echo base_url(); ?>dist/assets/plugins/custom/datatables/datatables.bundle.js?v=7.0.6"></script>
-<script src="<?php echo base_url(); ?>dist/select2/js/select2.min.js"></script>
+<!-- <script src="<?php echo base_url(); ?>dist/assets/js/jquery-ui.min.js"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha512-uto9mlQzrs59VwILcLiRYeLKPPbS/bT71da/OEBYEwcdNUk8jYIy+D176RYoop1Da+f9mvkYrmj5MCLZWEtQuA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <!--end::Page Vendors-->
 
 

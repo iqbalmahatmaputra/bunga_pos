@@ -27,6 +27,13 @@ $this->db->order_by("waktu", "desc");
 
 
   }    
+  function show_untung_bulan(){
+    $this->db->select('* , sum(total_harga*qty) as total');
+    $this->db->from('v_penjualan_produk');
+    $this->db->group_by('MONTH(tanggal_penjualan)');
+    $query = $this->db->get();
+    return $query;
+  }
     // datatables
     function json() {
         $this->datatables->select('*');

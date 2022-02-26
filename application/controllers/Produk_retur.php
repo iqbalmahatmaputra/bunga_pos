@@ -103,6 +103,10 @@ class Produk_retur extends CI_Controller
         $barang = $this->db->query('select * from v_penjualan_produk where no_faktur = ' . $no_invoice)->result();
         $this->db->where("no_faktur",$no_invoice);
         $brg =$this->db->get("v_penjualan_produk")->result();    
+
+        $this->db->set('tujuan', 'Sudah di Retur');
+        $this->db->where("no_faktur",$no_invoice);
+        $this->db->update('penjualan');
        
         // for ($i = 0; $i < count($brg); $i++) {
         // // echo "<br>a";

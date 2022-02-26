@@ -1,4 +1,4 @@
-  <?php
+<?php
 
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
@@ -14,7 +14,20 @@ class Produk_model extends CI_Model
     {
         parent::__construct();
     }
-
+    function get_barang($kode_produk){
+        $hsl=$this->db->query("SELECT * FROM produk where kode_produk='$kode_produk'");
+		return $hsl;
+    }
+    function show_temp($id_penjualan){
+        $query="SELECT p.kode_produk as kode_produk, pp.* FROM produk_penjualan as pp left join produk as p on pp.id_produk = p.id_produk where id_penjualan='$id_penjualan'";
+		return $this->db->query($query);
+    }
+    function search_produk($kode_produk){
+        $this->db->like('kode_produk', $kode_produk , 'both');
+        $this->db->order_by('kode_produk', 'ASC');
+        $this->db->limit(15);
+        return $this->db->get('produk')->result();
+    }
     // datatables
     function json() {
         $this->datatables->select('id_produk,kode_produk,nama_produk,deskripsi_produk,harga_beli_produk,harga_jual_produk,status,harga_jual_produk_sup,satuan');
@@ -25,29 +38,12 @@ class Produk_model extends CI_Model
         $this->datatables->add_column('action', anchor(site_url('produk/read/$1'),'Read')." | ".anchor(site_url('produk/update/$1'),'Update')." | ".anchor(site_url('produk/delete/$1'),'Delete','onclick="javasciprt: return confirm(\'Are You Sure ?\')"'), 'id_produk');
         return $this->datatables->generate();
     }
-    function jsonProdukPenjualan($id_penjualan) {
-        $this->datatables->select('*');
-        $this->datatables->from('produk_penjualan');
-        $this->datatables->where('id_penjualan', $id_penjualan);
-     
-        //add this line for join
-        //$this->datatables->join('table2', 'produk.field = table2.field');
-        $this->datatables->add_column('action', anchor(site_url('produk/deleteProduk/$1'),'<i class="flaticon2-trash"></i>','onclick="javasciprt: return confirm(\'Are You Sure ?\')"'), 'id_produk_penjualan');
-        return $this->datatables->generate();
-    }
     function get_nama($nama){
         $this->db->select('*');
         $this->db->from('produk');
         $this->db->like('nama_produk', $nama);
         return $this->db->get()->result_array();
 
-    }
-
-    function search_produk($kode_produk){
-        $this->db->like('kode_produk', $kode_produk , 'both');
-        $this->db->order_by('kode_produk', 'ASC');
-        $this->db->limit(15);
-        return $this->db->get('produk')->result();
     }
     function get_kode($kode_p){
         $q = $this->db->query("SELECT MAX(RIGHT(kode_produk,4)) AS kd_max FROM produk WHERE kode_produk like '".$kode_p."%'");
@@ -65,10 +61,6 @@ class Produk_model extends CI_Model
         return $kd;
 
     }
-    function product_list(){
-        $hasil=$this->db->get('produk');
-        return $hasil->result();
-    }
     // get all
     function get_all()
     {
@@ -81,18 +73,6 @@ class Produk_model extends CI_Model
     {
         $this->db->where($this->id, $id);
         return $this->db->get($this->table)->row();
-    }
-    function get_barang($kode_produk){
-        $hsl=$this->db->query("SELECT * FROM produk where kode_produk='$kode_produk'");
-		return $hsl;
-    }
-    function show_temp($id_penjualan){
-        $query="SELECT p.kode_produk as kode_produk, pp.* FROM produk_penjualan as pp left join produk as p on pp.id_produk = p.id_produk where id_penjualan='$id_penjualan'";
-		return $this->db->query($query);
-    }
-    function tampil_barang(){
-        $hsl= $this->db->query("SELECT * FROM produk");
-        return $hsl;
     }
     
     // get total rows

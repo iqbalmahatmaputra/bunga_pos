@@ -3,7 +3,8 @@
 if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
-
+ini_set('max_execution_time', 0); 
+ini_set('memory_limit','2048M');
 class Report extends CI_Controller
 {
     public function __construct()
@@ -23,6 +24,10 @@ class Report extends CI_Controller
     {
         $this->load->view('report/penjualan_list');
     }
+    public function indexInventory(){
+        $this->load->view('report/inventory_list');
+        // echo "haloo";
+    }
 
     public function json()
     {
@@ -35,6 +40,62 @@ class Report extends CI_Controller
         $data = json_decode($this->Penjualan_model->json2());
         echo json_encode($data->data);
     }
+    public function reportInven(){
+        header('Content-Type: application/json');
+        $data = json_decode($this->Penjualan_model->jsonInven());
+        echo json_encode($data->data);
+    }
+    public function jsonInven(){
+        $this->db->select('id_produk, kode_produk, nama_produk, sum(jumlah_produk_stok) jumlah_produk_stok');
+        $this->db->group_by('id_produk');
+        $stok = $this->db->get('v_produk_stok')->result();
+        $data = [];
+        foreach ($stok as $key => $value) {
+            $terjual = $this->db->query("select sum(qty) qty from produk_penjualan WHERE id_produk=" . $value->id_produk . " GROUP BY id_produk")->row();
+            $retur = $this->db->query("select sum(qty) qty from v_retur WHERE id_produk=" . $value->id_produk. " GROUP BY id_produk")->row();
+            $returVal=0;
+            if(empty($retur->qty)){
+                $returVal=0;
+            }else{
+                $returVal=$retur->qty;
+            }
+            $jumTerjual = 0;
+            if (empty($terjual)) {
+                $stok = $value->jumlah_produk_stok - $jumTerjual +$returVal;
+            } else {
+                $jumTerjual = $terjual->qty;
+                $stok = $value->jumlah_produk_stok - $terjual->qty +$returVal;
+
+            }
+
+            $status = "";
+            if ($stok > 10) {
+                $status = '<span><span class="label label-success label-dot mr-2"></span><span class="font-weight-bold text-success">Tersedia</span></span>';
+            } else if ($stok <= 10 && $stok > 0) {
+                $status = '<span><span class="label label-warning label-dot mr-2"></span><span class="font-weight-bold text-warning">Hampir Habis</span></span>';
+            } else {
+                $status = '<span><span class="label label-danger label-dot mr-2"></span><span class="font-weight-bold text-danger">Habis</span></span>';
+            }
+            $data[$key]['kode_produk'] = $value->kode_produk;
+            $data[$key]['nama_produk'] = $value->nama_produk;
+            $data[$key]['id_produk'] = $value->id_produk;
+            // $data[$key]['foto_produk'] = '';
+            $data[$key]['produk'] = '
+            <a class="text-dark-75 font-weight-bolder text-hover-primary mb-1 font-size-lg">' . $value->nama_produk . '</a>
+                            <div>
+                                <span class="font-weight-bolder">Kode Produk:</span>
+                                <a class="text-muted font-weight-bold text-hover-primary" href="#">' . $value->kode_produk . '</a>
+                            </div>
+                        </td>';
+            $data[$key]['jumlah_produk_stok'] = $value->jumlah_produk_stok;
+            $data[$key]['jumlah_terjual'] = $jumTerjual;
+            $data[$key]['stok'] = $stok;
+            $data[$key]['status'] = $status;
+           
+        }
+        echo json_encode($data);
+
+    }
     public function cek(){
         if($this->input->get('search')){
             $this->cariTanggalJson();
@@ -42,6 +103,138 @@ class Report extends CI_Controller
             $this->cetak();
         }
     }
+    public function cekInven(){
+        if($this->input->get('search')){
+            $this->cariTanggalJsonInven();
+        }else{
+            $this->cetakInven();
+        }
+    }
+    public function cariTanggalJsonInven(){
+        $tanggal_mulai = $this->input->get('tanggal_mulai', true);
+        $tanggal_selesai = $this->input->get('tanggal_selesai', true);
+        $kode = $this->input->get('kode', true);
+
+        
+        $this->db->where("kode_produk",$kode);
+        $produk=$this->db->get("v_produk_stok")->num_rows();
+       
+        
+        
+        // echo $penjualan;
+        if ($produk==1) {
+            $data['cek'] =  $this->db->query("SELECT * from v_produk_stok WHERE kode_produk LIKE '%{$kode}%' and tanggal_produk_stok BETWEEN '".$tanggal_mulai."' AND '".$tanggal_selesai."'")->result();
+           
+          }else{
+            $data['cek'] =  $this->db->query("SELECT * from v_produk_stok WHERE kode_produk LIKE '%{$kode}%' and tanggal_produk_stok BETWEEN '".$tanggal_mulai."' AND '".$tanggal_selesai."'")->result();
+           
+        }
+     
+    
+      $data['tanggal_mulai'] = $tanggal_mulai;
+      $data['tanggal_selesai'] = $tanggal_selesai;
+    //  print_r($data);
+       $this->load->view('report/rekapInven',$data);
+  }
+  public function cetakInven(){
+    $tanggal_mulai = $this->input->get('tanggal_mulai', true);
+    $tanggal_selesai = $this->input->get('tanggal_selesai', true);
+    $kode = $this->input->get('kode', true);
+   
+    $this->db->where("kode_produk",$kode);
+        $produk=$this->db->get("v_produk_stok")->num_rows();
+       
+     
+        if ($produk==1) {
+            $data['cek'] =  $this->db->query("SELECT * from v_produk_stok WHERE kode_produk LIKE '%{$kode}%' and tanggal_produk_stok BETWEEN '".$tanggal_mulai."' AND '".$tanggal_selesai."'")->result();
+           
+          }else{
+            $data['cek'] =  $this->db->query("SELECT * from v_produk_stok WHERE kode_produk LIKE '%{$kode}%' and tanggal_produk_stok BETWEEN '".$tanggal_mulai."' AND '".$tanggal_selesai."'")->result();
+           
+        }
+       
+        $oel = '
+        
+    <style>table,p{font-family: Arial, Helvetica, sans-serif;border-collapse: collapse;}</style>
+    <table style="width:100%;">
+    <tr>
+    
+    <td colspan="3" style="text-align: center;"><h3>Rekap Data Inventory</h3></td>
+    
+    </tr>
+    </table>
+    <table style="width:100%;">
+    <tr>
+    <td><p>Kode : '.$kode.'</p></td>
+    <td><p>Dari : '.$tanggal_mulai.'</p></td>
+    <td><p>Sampai : '.$tanggal_selesai.'</p></td>
+    </tr>
+    </table>
+    <table class="table table-bordered table-hover table-checkable" id="kt_datatable" border=1
+    style="margin-top: 13px !important">
+    <thead>
+        <tr>
+            <th>Kode Produk</th>
+            <th>Nama</th>
+            <th>Tanggal Produk Stok</th>
+            <th>Jumlah</th>
+            <th>Harga Beli</th>
+            <th>Harga Jual</th>
+        </tr>
+    </thead>
+    <tbody>
+        '; 
+
+foreach($data['cek'] as $u){ 
+
+$oel .= '
+        <tr>
+            <td style="text-align: center;">
+                    '.$u->kode_produk .'
+            </td>
+            <td style="text-align: center;">'.$u->nama_produk .'</td>
+            <td style="text-align: center;">'.date("Y-m-d",strtotime($u->tanggal_produk_stok)) .'</td>
+            <td style="text-align: center;">
+                    '.$u->jumlah_produk_stok .'
+            </td>
+            <td style="text-align: center;">
+                    '.number_format($u->harga_beli_produk , 0, ".", ".") .'
+            </td>
+            <td style="text-align: center;">'.number_format($u->harga_jual_produk , 0, ".", ".").'</td>
+            
+        </tr>
+        ';
+}
+
+
+        $oel .=' </tbody>
+    <tfoot>
+        <tr>
+           
+        </tr>
+    </tfoot>
+</table>'
+;
+
+    
+    $data = array(
+        "dataku" => $oel,
+          
+        
+    );
+
+
+        $this->load->library('pdf');
+        
+    $this->pdf->setPaper('A4', 'potrait');
+    $this->pdf->filename = "Pengiriman.pdf";
+    $this->pdf->set_option('isRemoteEnabled', TRUE);
+    
+
+    $this->pdf->load_view('pengiriman/pengiriman_pdf', $data);
+  
+    
+  }
     public function cariTanggalJson(){
             $tanggal_mulai = $this->input->get('tanggal_mulai', true);
             $tanggal_selesai = $this->input->get('tanggal_selesai', true);
@@ -55,7 +248,18 @@ class Report extends CI_Controller
             $penjualan=$this->db->get("penjualan")->num_rows();
             
             
-            // echo $penjualan;
+            if($tanggal_mulai==$tanggal_selesai){
+            if ($produk==1) {
+                $data['cek'] =  $this->db->query("SELECT * from v_report_produk WHERE kode_produk LIKE '%{$kode}%' and tanggal_penjualan like '%".$tanggal_mulai."%'")->result();
+                $data['retur'] =  $this->db->query("SELECT * from v_retur WHERE kode_produk LIKE '%{$kode}%' and tanggal_penjualan like '%".$tanggal_mulai."%'")->result();
+            }else if($penjualan==1){
+                $data['cek'] =  $this->db->query("SELECT * from v_report_produk WHERE no_faktur LIKE '%{$kode}%' and tanggal_penjualan like '%".$tanggal_mulai."%'")->result();
+                $data['retur'] =  $this->db->query("SELECT * from v_retur WHERE no_faktur LIKE '%{$kode}%' and tanggal_penjualan like '%".$tanggal_mulai."%'")->result();
+            }else{
+                $data['cek'] =  $this->db->query("SELECT * from v_report_produk WHERE kode_produk LIKE '%{$kode}%' and tanggal_penjualan like '%".$tanggal_mulai."%'")->result();
+                $data['retur'] =  $this->db->query("SELECT * from v_retur WHERE kode_produk LIKE '%{$kode}%' and tanggal_penjualan like '%".$tanggal_mulai."%'")->result();
+            }
+        }else{
             if ($produk==1) {
                 $data['cek'] =  $this->db->query("SELECT * from v_report_produk WHERE kode_produk LIKE '%{$kode}%' and tanggal_penjualan BETWEEN '".$tanggal_mulai."' AND '".$tanggal_selesai."'")->result();
                 $data['retur'] =  $this->db->query("SELECT * from v_retur WHERE kode_produk LIKE '%{$kode}%' and tanggal_penjualan BETWEEN '".$tanggal_mulai."' AND '".$tanggal_selesai."'")->result();
@@ -66,6 +270,7 @@ class Report extends CI_Controller
                 $data['cek'] =  $this->db->query("SELECT * from v_report_produk WHERE kode_produk LIKE '%{$kode}%' and tanggal_penjualan BETWEEN '".$tanggal_mulai."' AND '".$tanggal_selesai."'")->result();
                 $data['retur'] =  $this->db->query("SELECT * from v_retur WHERE kode_produk LIKE '%{$kode}%' and tanggal_penjualan BETWEEN '".$tanggal_mulai."' AND '".$tanggal_selesai."'")->result();
             }
+        }
          
         
           $data['tanggal_mulai'] = $tanggal_mulai;

@@ -24,8 +24,9 @@ class Penjualan_model extends CI_Model
     // datatables
     public function json()
     {
-        $this->datatables->select('id_penjualan,tanggal_penjualan,no_faktur,id_user,total,qty');
+        $this->datatables->select('id_penjualan,tanggal_penjualan,no_faktur,id_user,total,qty,tujuan');
         $this->datatables->from('penjualan');
+        // $this->datatables->where('tujuan','pembeli');
         //add this line for join
         //$this->datatables->join('table2', 'penjualan.field = table2.field');
         $this->datatables->add_column('action',anchor(site_url('produk_retur/create/$2'), 'Retur','onclick="javasciprt: return confirm(\'Apakah anda YAKIN ingin meretur Faktur ini ?\')"') . " | " .anchor(site_url('produk_penjualan/finish/$1'), 'Print') . " | " . anchor(site_url('penjualan/read/$1'), 'Read'), 'id_penjualan,no_faktur');

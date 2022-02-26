@@ -11,9 +11,8 @@ class Produk_penjualan extends CI_Controller
         parent::__construct();
 
         $this->load->model('Produk_penjualan_model');
-        $this->load->model('Penjualan_model');
         $this->load->model('Produk_model');
-
+        $this->load->model('Penjualan_model');
 
         $this->load->library('form_validation');
 
@@ -21,12 +20,6 @@ class Produk_penjualan extends CI_Controller
             redirect('/');
         }
         $this->load->library('datatables');
-    }
-    public function selesai2(){
-        $id = $_REQUEST['id_penjualan'];
-        $id_user = $this->input->post('id_user', true);
-        $tujuan = $this->input->post('tujuan', true);
-
     }
     public function oke(){
         $id_user = $this->session->userdata("id_user");
@@ -36,7 +29,7 @@ class Produk_penjualan extends CI_Controller
             'id_penjualan' => $this->input->post('id_penjualan'),
             'id_produk' => $this->input->post('id_produk'),
             'qty' => $this->input->post('qty', true),
-            'total_harga' => $this->input->post('total', true),
+            'total_harga' => $this->input->post('harga', true),
             'tujuan' => "Belum",
         );
         $this->Produk_penjualan_model->insert($data);
@@ -47,11 +40,12 @@ class Produk_penjualan extends CI_Controller
     public function siap(){
         $id_penjualan = $this->input->post("id_penjualan");
         $tujuan = $this->input->post("tujuan");
+        $nama_user = $this->input->post("nama_user");
         $data = $this->Produk_model->show_temp($id_penjualan)->result();
      $total =0;
      $jumlah_barang = 0;
      foreach ($data as $d) {
-        $total += $d->total_harga * $d->qty;
+        $total += $d->total_harga* $d->qty ;
 
         $jumlah_barang += $d->qty; 
      }
@@ -59,7 +53,7 @@ class Produk_penjualan extends CI_Controller
         $data = array(
             'qty' => $jumlah_barang,
             'total' => $total,
-            'tujuan' => $tujuan
+            'tujuan' => $nama_user." - ".$tujuan
     );
 
         $this->db->set('tujuan', $tujuan);
@@ -113,7 +107,7 @@ $this->db->where("id_penjualan",$id_penjualan);
        
             $this->db->where('id_produk', $value->id_produk);
             $produk = $this->db->get('produk')->row();
-            $jumlah_harga = str_replace(".", "", $value->total_harga) * $value->qty;
+            $jumlah_harga = str_replace(".", "", $value->total_harga) * $value->qty ;
             $total += $jumlah_harga;
             echo '<tr>
 <td style="width: 23px;text-align: center;">' . ($key+ 1) . '</td>
@@ -171,7 +165,7 @@ $this->db->where("id_penjualan",$id_penjualan);
 <p style="text-align: center;">Hormat Kami,</p>
 
 <p style="text-align: center;">(___________________)</p>
-<p style="text-align: left;margin-left:170px;margin-top:-20px;text-transform: capitalize;"><small>    ' .$nama->nama_user . '</small></p>
+<p style="text-align: left;margin-left:170px;margin-top:-20px;text-transform: capitalize;"><small>    ' .$nama_user . '</small></p>
 </td>
 </tr>
 </tbody>
@@ -314,6 +308,7 @@ $this->db->where("id_penjualan",$id_penjualan);
         $nama=$this->db->get("user")->row();
         $this->db->where("id_penjualan",$id_penjualan);
         $produk =$this->db->get("v_penjualan_produk")->result();    
+        
         echo '
         <style>table,p{font-family: Arial, Helvetica, sans-serif;border-collapse: collapse;}</style>
         <table style="text-transform: capitalize;height: 59px; margin-left: auto; margin-right: auto; width: 1046px;">

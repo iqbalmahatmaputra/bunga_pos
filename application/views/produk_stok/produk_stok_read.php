@@ -191,17 +191,25 @@ $jum_retur
                             <tbody>
 
                                 <?php
+                                $jumlah_stokk = 0;
 foreach ($stok_produk as $key => $value) {
     ?>
                                 <tr>
 
-                                    <td> <?=date('d F Y', strtotime($value->tanggal_produk_stok));
+                                    <td> <?=date('d F Y', strtotime($value->tanggal_produk_stok));?>  <?=$value->keterangan
     ?></td>
                                     <td> <?=$value->jumlah_produk_stok?></td>
 
                                 </tr>
+                                
 
-                                <?php }?>
+                                <?php 
+                            $jumlah_stokk += $value->jumlah_produk_stok;
+                            }?>
+                                <tr>
+                                    <td><b>Total Stok</b></td>
+                                    <td><b><?= $jumlah_stokk?></b></td>
+                                </tr>
                             </tbody>
 
                         </table>
@@ -241,6 +249,7 @@ foreach ($stok_produk as $key => $value) {
                             <tbody>
 
                                 <?php
+                                $jumlah_penjualan = 0;
 foreach ($penjualan as $key => $value) {
     ?>
                                 <tr>
@@ -251,9 +260,14 @@ foreach ($penjualan as $key => $value) {
 
                                 </tr>
 
-                                <?php }?>
+                                <?php 
+                            $jumlah_penjualan += $value->qty;
+                             }?>
                             </tbody>
-
+                            <tr>
+                                    <td><b>Total Stok</b></td>
+                                    <td><b><?= $jumlah_penjualan?></b> </td>
+                                </tr>
                         </table>
                     </div>
                     <!--end::Table-->

@@ -10,6 +10,7 @@ class Penjualan extends CI_Controller
     {
         parent::__construct();
         date_default_timezone_set('Asia/Jakarta');
+        $this->load->model('User_model');
 
 
         $this->load->model('Penjualan_model');
@@ -110,7 +111,7 @@ class Penjualan extends CI_Controller
 
         $data = array(
             'no_faktur' => $date->getTimestamp(),
-            'id_user' => $this->session->userdata('id_user'),
+            'id_user' => $this->session->userdata("id_user"),
             'total' => 0,
             'qty' => 0,
             'jenis' => $jenis,

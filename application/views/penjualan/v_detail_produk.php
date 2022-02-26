@@ -5,7 +5,23 @@
 							$stok = $this->db->query("select final_stock from v_stok where kode_produk='" . $b['kode_produk']."'")->row_array();
 				
 							$retur = $this->db->query("select sum(qty) qty from v_retur WHERE kode_produk='" . $b['kode_produk']. "' GROUP BY kode_produk")->row_array();
+							$produk_stok = $this->db->query("select kode_produk , jumlah_produk_stok from v_produk_stok_groupby WHERE kode_produk='" . $b['kode_produk']. "' GROUP BY kode_produk")->row_array();
+							$iniDia = $this->db->query("SELECT vs.kode_produk, vs.jumlah_produk_stok as jumlah_produk_stok , vs.stock_terjual as stok_terjual , vsr.qty_retur as qty_retur FROM `v_stok` as vs JOIN v_stok_retur as vsr ON vs.id_produk = vsr.id_produk where vs.kode_produk = '" . $b['kode_produk']."'")->row_array();
+						$returan = $this->db->query("SELECT p.kode_produk as kode_produk ,sum(pr.qty) as jumretur FROM `produk_retur` as pr join produk as p on pr.id_produk = p.id_produk where kode_produk='". $b['kode_produk']."' GROUP BY kode_produk ")->row_array();
+							// Baru
+						
+						// End
+							if($iniDia){
 
+								if($returan['jumretur'] == NULL){
+								$akhir = $iniDia['jumlah_produk_stok'] - $iniDia['stok_terjual'];
+							}else{
+								$akhir = $iniDia['jumlah_produk_stok'] - $iniDia['stok_terjual'] + $returan['jumretur'];
+							}
+							}
+							else{
+								$akhir = $produk_stok['jumlah_produk_stok'];
+							}
 							            $returVal=0;
             if(empty($retur->qty)){
                 $returVal=0;
@@ -26,7 +42,7 @@
                 }
 				$stok_group = $this->db->query("select * from v_produk_stok_groupby where kode_produk='" . $b['kode_produk']."'")->row_array();
 				if (isset($stok_group->jumlah_produk_stok)) {
-					$stok_akhir=$stok_group->jumlah_produk_stok-$returVal;
+					$stok_akhir=$stok_group->jumlah_produk_stok+$returVal;
 				}
 			}	
 			 if($supplier == 0){
@@ -48,21 +64,26 @@
 	<div class="col-md-2">
 		<div class="form-group">
 			<label for="varchar">Stok </label>
-			<?php if(isset($stok_akhir)){
-				
+			<?php
+				if($akhir == 0 ){
+					?>
+					<input type="text" name="stok" value="<?php echo $akhir;?>" class="form-control input-sm bg-warning text-white" readonly>
+					<?php
+				}else{
+					?>
+<input type="text" name="stok" value="<?php echo $akhir;?>" class="form-control input-sm" readonly>
+					<?php
+				}
 			 ?>
-			<input type="text" name="stok" value="<?php echo $stok_akhir;?>" class="form-control input-sm" readonly>
-			<?php }else{ ?>
-			<input type="text" name="stok" value="0" class="form-control input-sm bg-warning text-white" readonly>
-			<?php } ?>
+			
+			
 		</div>
 	</div>
-
 	<div class="col-md-2">
 		<div class="form-group">
 			<label for="varchar">Jumlah </label>
 
-			<input type="number" id="qty" name="qty" value="0" min="1" max="<?php echo $stok_akhir;?>"
+			<input type="number" id="qty" name="qty" value="0" min="0" max="<?php echo $akhir;?>"
 				class="form-control input-sm" required>
 
 		</div>
@@ -72,7 +93,7 @@
 		<div class="form-group">
 			<label for="varchar">Harga </label>
 			<input type="text" name="harga" id="harga" value="<?php echo $harga;?>" class="form-control input-sm"
-				readonly>
+				>
 		</div>
 	</div>
 	<div class="col-md-3 d-flex align-items-end">
@@ -81,12 +102,28 @@
 			<input class="form-control" type="text" name="total" id="total">
 		</div>
 	</div>
-	<div class="col-md-3 d-flex align-items-end">
+	<?php 
+	if($akhir == 0){
+		?>
+<div class="col-md-3 d-flex align-items-end">
+		<div class="form-group">
+			<label for="butsave"> Aksi </label><br>
+			<button type="submit" class="btn btn-warning" id="butsave" disabled>Tidak Ada Stok</button>
+		</div>
+	</div>
+		<?php
+	}else{
+		?>
+<div class="col-md-3 d-flex align-items-end">
 		<div class="form-group">
 			<label for="butsave"> Aksi </label><br>
 			<button type="submit" class="btn btn-primary" id="butsave">Masukkan</button>
 		</div>
 	</div>
+		<?php
+	}
+	?>
+	
 
 
 </div>
@@ -151,3 +188,4 @@
 	});
 
 </script>
+

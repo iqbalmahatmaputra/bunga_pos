@@ -79,7 +79,7 @@ class Produk extends CI_Controller
             . "<td>$d->kode_produk</td>"
             . "<td>$d->qty</td>"
             . "<td>$d->total_harga</td>"
-            . "<td><button type='button' data-id=$d->id_produk class='btn btn-danger btn-rounded btn-sm delete'>Cancel</button></td>"
+            . "<td><button type='button' data-id=$d->id_produk,$d->id_penjualan class='btn btn-danger btn-rounded btn-sm delete'>Cancel</button></td>"
             . "</tr>";
            $total += $d->total_harga * $d->qty ;
            $jumlah_barang += $d->qty;
@@ -123,7 +123,11 @@ $this->db->update('penjualan', $data);
 	{
 		
 			$id=$this->input->post('id');
-            $this->db->where('id_produk', $id);
+            $pecah = explode(',', $id);
+            $produk = $pecah[0];
+			$penjualan=$pecah[1];
+            $this->db->where('id_penjualan', $penjualan)->where('id_produk', $produk);
+    
             $this->db->delete('produk_penjualan');
 			
 			echo json_encode(array(
